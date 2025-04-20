@@ -1,6 +1,12 @@
 import {createContext, useState} from "react";
+import PropTypes from "prop-types";
 
-export const DataContext = createContext(null)
+export const DataContext = createContext({
+    shoppingLists: [],
+    setShoppingLists: () => {},
+    users: [],
+    setUsers: () => {}
+})
 
 function ShoppingListProvider({children}){
 
@@ -10,6 +16,7 @@ function ShoppingListProvider({children}){
             owner: 1,
             cooperators: [],
             name: "Home",
+            archyved: false,
             tasks: [
                 { id: 1, text: "Buy groceries", checked: false },
                 { id: 2, text: "Clean kitchen", checked: false },
@@ -21,6 +28,7 @@ function ShoppingListProvider({children}){
             owner: 2,
             cooperators: [3],
             name: "Work",
+            archyved: false,
             tasks: [
                 { id: 1, text: "Reply to emails", checked: true },
                 { id: 2, text: "Prepare presentation", checked: false }
@@ -31,6 +39,7 @@ function ShoppingListProvider({children}){
             owner: 1,
             cooperators: [],
             name: "Shopping",
+            archyved: false,
             tasks: [
                 { id: 1, text: "Milk", checked: true },
                 { id: 2, text: "Bread", checked: false },
@@ -42,6 +51,7 @@ function ShoppingListProvider({children}){
             owner: 4,
             cooperators: [2, 3, 4],
             name: "Vacation Planning",
+            archyved: true,
             tasks: [
                 { id: 1, text: "Book flights", checked: false },
                 { id: 2, text: "Reserve hotel", checked: true }
@@ -52,6 +62,7 @@ function ShoppingListProvider({children}){
             owner: 3,
             cooperators: [],
             name: "Fitness",
+            archyved: false,
             tasks: [
                 { id: 1, text: "Morning run", checked: true },
                 { id: 2, text: "Yoga", checked: false },
@@ -63,6 +74,7 @@ function ShoppingListProvider({children}){
             owner: 2,
             cooperators: [],
             name: "Groceries",
+            archyved: false,
             tasks: [
                 { id: 1, text: "Bananas", checked: true },
                 { id: 2, text: "Chicken", checked: false },
@@ -74,6 +86,7 @@ function ShoppingListProvider({children}){
             owner: 2,
             cooperators: [1, 2],
             name: "Project X",
+            archyved: false,
             tasks: [
                 { id: 1, text: "Design layout", checked: false },
                 { id: 2, text: "Implement feature", checked: false }
@@ -84,6 +97,7 @@ function ShoppingListProvider({children}){
             owner: 1,
             cooperators: [],
             name: "Errands",
+            archyved: false,
             tasks: [
                 { id: 1, text: "Bank", checked: true },
                 { id: 2, text: "Post Office", checked: false }
@@ -94,6 +108,7 @@ function ShoppingListProvider({children}){
             owner: 3,
             cooperators: [2, 4],
             name: "Study Plan",
+            archyved: false,
             tasks: [
                 { id: 1, text: "Read chapter 3", checked: true },
                 { id: 2, text: "Practice problems", checked: false },
@@ -105,6 +120,7 @@ function ShoppingListProvider({children}){
             owner: 2,
             cooperators: [],
             name: "Car Maintenance",
+            archyved: false,
             tasks: [
                 { id: 1, text: "Oil change", checked: false },
                 { id: 2, text: "Tire rotation", checked: false }
@@ -115,6 +131,7 @@ function ShoppingListProvider({children}){
             owner: 4,
             cooperators: [],
             name: "Birthday Party",
+            archyved: false,
             tasks: [
                 { id: 1, text: "Order cake", checked: true },
                 { id: 2, text: "Invite friends", checked: true },
@@ -126,6 +143,7 @@ function ShoppingListProvider({children}){
             owner: 1,
             cooperators: [3],
             name: "Reading List",
+            archyved: false,
             tasks: [
                 { id: 1, text: "1984", checked: false },
                 { id: 2, text: "To Kill a Mockingbird", checked: true },
@@ -137,6 +155,7 @@ function ShoppingListProvider({children}){
             owner: 1,
             cooperators: [],
             name: "Chores",
+            archyved: false,
             tasks: [
                 { id: 1, text: "Laundry", checked: false },
                 { id: 2, text: "Dishes", checked: true },
@@ -148,6 +167,7 @@ function ShoppingListProvider({children}){
             owner: 2,
             cooperators: [4],
             name: "Meal Prep",
+            archyved: false,
             tasks: [
                 { id: 1, text: "Cook rice", checked: true },
                 { id: 2, text: "Grill chicken", checked: false }
@@ -158,6 +178,7 @@ function ShoppingListProvider({children}){
             owner: 3,
             cooperators: [],
             name: "Goals",
+            archyved: false,
             tasks: [
                 { id: 1, text: "Learn React", checked: false },
                 { id: 2, text: "Write blog post", checked: true },
@@ -188,12 +209,11 @@ function ShoppingListProvider({children}){
         }
     ])
 
-
     const value = {
-        shoppingLists: shoppingLists,
-        setShoppingLists: setShoppingLists,
-        users: users,
-        setUsers: setUsers
+        shoppingLists,
+        setShoppingLists,
+        users,
+        setUsers
     }
     return (
         <DataContext.Provider value={value}>
@@ -201,5 +221,9 @@ function ShoppingListProvider({children}){
         </DataContext.Provider>
     )
 }
+
+ShoppingListProvider.propTypes = {
+    children: PropTypes.node.isRequired
+};
 
 export default ShoppingListProvider;

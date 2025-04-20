@@ -3,7 +3,7 @@ import {useContext} from "react";
 import {ShoppingListContext} from "../providers/shoppingListProvider.jsx";
 import {DataContext} from "../providers/dataProvider.jsx";
 
-function ShoppingListItem({id}){
+function ShoppingListItem({id, archyved}){
     const {setShoppingLists} = useContext(DataContext)
     const {items, boardId} = useContext(ShoppingListContext)
     const item = items.filter((item)=> item.id == id)[0]
@@ -62,6 +62,7 @@ function ShoppingListItem({id}){
     return (
         <InputGroup className="mb-3" style={{alignSelf: "center"}}>
             <InputGroup.Checkbox style={{alignSelf: "center"}}
+                                 disabled={archyved}
                                  defaultChecked={item.checked}
                                  onChange={(e) => {
                                      setChecked(e.target.checked)
@@ -69,6 +70,7 @@ function ShoppingListItem({id}){
 
             />
             <Form.Control aria-label="Text input with checkbox"
+                          disabled={archyved}
                           defaultValue={item.text}
                           onChange={(e)=>{
                               setText(e.target.value)

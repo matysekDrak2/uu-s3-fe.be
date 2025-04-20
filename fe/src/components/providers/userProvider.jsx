@@ -1,20 +1,23 @@
 import {createContext, useContext, useState} from "react";
-import {Col, Container, Form, FormSelect, Navbar, NavbarText, Row} from 'react-bootstrap'
+import {Col, Form, NavbarText, Row} from 'react-bootstrap'
 import {DataContext} from "./dataProvider.jsx";
+import PropTypes from "prop-types";
 
-export const UserContext = createContext(null)
+export const UserContext = createContext({
+    currentUser: {}
+})
 
 function UserProvider({children}){
     const { users } = useContext(DataContext);
+
 
     const [currentUser, setCurrentUser] = useState(
         users.filter((item)=>item.id === 1)[0]
     )
 
 
-
     const value = {
-        user: currentUser
+        currentUser
     }
     return (
         <UserContext.Provider value={value}>
@@ -45,5 +48,9 @@ function UserProvider({children}){
         </UserContext.Provider>
     )
 }
+
+UserProvider.propTypes = {
+    children: PropTypes.node.isRequired
+};
 
 export default UserProvider;

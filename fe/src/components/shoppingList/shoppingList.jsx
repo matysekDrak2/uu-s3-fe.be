@@ -3,16 +3,12 @@ import ShoppingListProvider, {ShoppingListContext} from "../providers/shoppingLi
 import {useNavigate, useParams} from "react-router-dom";
 import {useContext, useMemo, useState} from "react";
 import ShoppingListItem from "./shoppingListItem.jsx";
-import {DataContext} from "../providers/dataProvider.jsx";
-import {UserContext} from "../providers/user_provider.jsx";
+import {UserContext} from "../providers/userProvider.jsx";
 
-function ShoppingListInner(){
-    const {items, name, ownerId, leave, addTask} = useContext(ShoppingListContext)
-    const {user} = useContext(UserContext)
+function ShoppingListInner() {
+    const {items, name, addTask, setManagementOpened, archyved} = useContext(ShoppingListContext)
+
     const navigate = useNavigate()
-
-
-    const isOwner = user.id === ownerId
 
     const [filter, setFilter] = useState("none")
 
@@ -27,16 +23,18 @@ function ShoppingListInner(){
         }
     }, [filter, items])
 
+
+
     return (
         <Container fluid style={{margin: "25px 0px 25px 0px"}}>
+            <ButtonGroup>
+                <Button variant={"primary"} onClick={()=>{navigate('/')}}>HOME</Button>
+                <Button variant={"warning"} onClick={()=>{setManagementOpened(true)}}>MANAGE</Button>
+            </ButtonGroup>
+
             <Row className="justify-content-center" style={{marginBottom: "20px"}}>
                 <ButtonGroup>
-                    <Button variant={"primary"} onClick={()=>{navigate('/')}}>HOME</Button>
-                    <Button disabled={true} variant={"secondary"} >{name}</Button>
-                    <Button variant={"danger"} disabled={isOwner} onClick={()=>{
-                        leave()
-                        navigate('/')
-                    }}>Leave</Button>
+                    <Button variant={"secondary"} disabled={true} >{name}</Button>
                 </ButtonGroup>
             </Row>
             <Row>
@@ -50,7 +48,7 @@ function ShoppingListInner(){
                 <Col xs={11} sm={8} md={6}>
                     {shownItems.sort((a,b)=> a.id - b.id).map((item)=> {
                         return (
-                            <ShoppingListItem key={item.id} id={item.id} />
+                            <ShoppingListItem key={item.id} id={item.id} archyved={archyved} />
                         )
                     })}
                 </Col>
@@ -60,6 +58,7 @@ function ShoppingListInner(){
                     <Button className="mb-3" variant={"success"} onClick={()=>addTask()}>+</Button>
                 </Col>
             </Row>
+            {JSON.stringify()}
         </Container>
     )
 }
