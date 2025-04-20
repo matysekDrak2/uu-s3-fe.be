@@ -28,7 +28,8 @@ const listUpdateSchema ={
 const validateListUpdate = ajv.compile(listUpdateSchema);
 
 module.exports = function update(req, res) {
-    const userId = req.body.additionalData.userId;
+    const {additionalData, ...body } = req.body;
+    const userId = additionalData.userId;
     const listId = req.params.id;
 
     // Validate list ID
@@ -36,12 +37,13 @@ module.exports = function update(req, res) {
     if (!validId) {
         return res.status(400).json(validateId.errors);
     }
-    const { name, archived, cooperators } = req.body;
 
-    const validUl = validateListUpdate(req.body);
+    const validUl = validateListUpdate(body);
     if (!validUl) {
         return res.status(400).json(validateListUpdate.errors);
     }
+
+    const { name, archived, cooperators } = body;
 
     // Read existing lists
     let lists = [];
