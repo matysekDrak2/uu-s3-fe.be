@@ -1,0 +1,463 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Shopping List API",
+    "version": "1.0.0",
+    "description": "API for managing users, shopping lists, and items."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080/api/v1",
+      "description": "Local server"
+    }
+  ],
+  "paths": {
+    "/users": {
+      "get": {
+        "summary": "Get all users",
+        "description": "Retrieve all users without their passwords.",
+        "responses": {
+          "200": {
+            "description": "A list of users without passwords.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "string" },
+                      "name": { "type": "string" },
+                      "email": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Login user",
+        "description": "Authenticate a user and return a session.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string" }
+                },
+                "required": ["email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User authenticated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "string" },
+                        "name": { "type": "string" },
+                        "email": { "type": "string" }
+                      }
+                    },
+                    "session": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid credentials."
+          }
+        }
+      },
+      "put": {
+        "summary": "Sign up user",
+        "description": "Create a new user and return a session.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "minLength": 6 }
+                },
+                "required": ["name", "email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User created successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "string" },
+                        "name": { "type": "string" },
+                        "email": { "type": "string" }
+                      }
+                    },
+                    "session": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid user data."
+          },
+          "409": {
+            "description": "User with this email already exists."
+          }
+        }
+      }
+    },
+    "/lists": {
+      "get": {
+        "summary": "Get all shopping lists",
+        "description": "Retrieve all shopping lists.",
+        "responses": {
+          "200": {
+            "description": "A list of shopping lists.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "string" },
+                      "name": { "type": "string" },
+                      "ownerId": { "type": "string",
+                        "minLength": 36,
+                        "maxLength": 36
+                      },
+                      "cooperators": {
+                        "type": "array",
+                        "items": { "type": "string",
+                          "minLength": 36,
+                          "maxLength": 36
+                        }
+                      },
+                      "archived": { "type": "boolean" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new shopping list",
+        "description": "Add a new shopping list.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "ownerId": { "type": "string", "minLength": 36, "maxLength": 36 },
+                  "cooperators": {
+                    "type": "array",
+                    "items": { "type": "string", "minLength": 36, "maxLength": 36 }
+                  }
+                },
+                "required": ["name", "ownerId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Shopping list created successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string" },
+                    "name": { "type": "string" },
+                    "ownerId": { "type": "string" },
+                    "cooperators": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid shopping list data."
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a shopping list",
+        "description": "Modify an existing shopping list.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string", "minLength": 36, "maxLength": 36 },
+                  "name": { "type": "string" },
+                  "cooperators": {
+                    "type": "array",
+                    "items": { "type": "string", "minLength": 36, "maxLength": 36 }
+                  },
+                  "archived": { "type": "boolean" }
+                },
+                "required": ["id"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Shopping list updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string" },
+                    "name": { "type": "string" },
+                    "ownerId": { "type": "string" },
+                    "cooperators": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    },
+                    "archived": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid shopping list data."
+          },
+          "404": {
+            "description": "Shopping list not found."
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a shopping list",
+        "description": "Remove a shopping list by its ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 36,
+              "maxLength": 36
+            },
+            "description": "ID of the shopping list to delete."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shopping list deleted successfully."
+          },
+          "400": {
+            "description": "Invalid shopping list ID."
+          },
+          "404": {
+            "description": "Shopping list not found."
+          }
+        }
+      }
+    },
+    "/listItems": {
+      "get": {
+        "summary": "Get list items by list ID",
+        "description": "Retrieve all items in a specific shopping list.",
+        "parameters": [
+          {
+            "name": "listId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 36,
+              "maxLength": 36
+            },
+            "description": "ID of the shopping list to retrieve items for."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of shopping list items.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "string" },
+                      "name": { "type": "string" },
+                      "listId": { "type": "string" },
+                      "completed": {"type": "boolean"}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid list ID."
+          },
+          "500": {
+            "description": "Internal Server Error."
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new list item",
+        "description": "Add a new item to a shopping list.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "listId": { "type": "string", "minLength": 36, "maxLength": 36 }
+                },
+                "required": ["name", "listId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "List item created successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string" },
+                    "name": { "type": "string" },
+                    "listId": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid list item data."
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a list item",
+        "description": "Modify an existing item in a shopping list.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string", "minLength": 36, "maxLength": 36 },
+                  "name": { "type": "string" },
+                  "listId": { "type": "string", "minLength": 36, "maxLength": 36 }
+                },
+                "required": ["id", "listId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "List item updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string" },
+                    "name": { "type": "string" },
+                    "listId": { "type": "string" },
+                    "completed": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid list item data."
+          },
+          "404": {
+            "description": "List item not found."
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a list item",
+        "description": "Remove an item from a shopping list by its ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 36,
+              "maxLength": 36
+            },
+            "description": "ID of the list item to delete."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List item deleted successfully."
+          },
+          "400": {
+            "description": "Invalid list item ID."
+          },
+          "404": {
+            "description": "List item not found."
+          }
+        }
+      }
+    }
+  }
+}
