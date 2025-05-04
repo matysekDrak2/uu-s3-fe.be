@@ -1,12 +1,11 @@
 import {Button, ButtonGroup, Col, Container, Row} from "react-bootstrap";
-import ShoppingListProvider, {ShoppingListContext} from "../providers/shoppingListProvider.jsx";
+import ListProvider, {ListContext} from "./listProvider.jsx";
 import {useNavigate, useParams} from "react-router-dom";
 import {useContext, useMemo, useState} from "react";
-import ShoppingListItem from "./shoppingListItem.jsx";
-import {UserContext} from "../providers/userProvider.jsx";
+import ListItem from "./listItem.jsx";
 
-function ShoppingListInner() {
-    const {items, name, addTask, setManagementOpened, archyved} = useContext(ShoppingListContext)
+function ListInner() {
+    const {items, name, addTask, setManagementOpened, archived} = useContext(ListContext)
 
     const navigate = useNavigate()
 
@@ -48,7 +47,7 @@ function ShoppingListInner() {
                 <Col xs={11} sm={8} md={6}>
                     {shownItems.sort((a,b)=> a.id - b.id).map((item)=> {
                         return (
-                            <ShoppingListItem key={item.id} id={item.id} archyved={archyved} />
+                            <ListItem key={item.id} id={item.id} archived={archived} />
                         )
                     })}
                 </Col>
@@ -63,15 +62,15 @@ function ShoppingListInner() {
     )
 }
 
-function ShoppingList(){
+function List(){
     const params = useParams()
     return (
-        <ShoppingListProvider id={params.id}>
-            <ShoppingListInner/>
-        </ShoppingListProvider>
+        <ListProvider id={params.id}>
+            <ListInner/>
+        </ListProvider>
     )
 }
 
 
 
-export default ShoppingList;
+export default List;

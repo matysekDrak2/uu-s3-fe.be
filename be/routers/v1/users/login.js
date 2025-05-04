@@ -3,6 +3,7 @@ const path = require('path');
 const Ajv = require('ajv');
 const { v4: uuidv4 } = require('uuid');
 const hashPassword = require('../../../tools/hashPassword');
+const createSessionByUserId = require('../../../dao/v1/session/create');
 
 const ajv = new Ajv();
 
@@ -20,7 +21,6 @@ const validate = ajv.compile(loginSchema);
 
 // Path to the users data file
 const usersFilePath = path.join(__dirname, '../../../data/users.json');
-const sessionsFilePath = path.join(__dirname, '../../../data/sessions.json');
 
 // Exported function to handle user login
 module.exports = (req, res) => {
@@ -30,7 +30,7 @@ module.exports = (req, res) => {
     const valid = validate(loginData);
 
     if (!valid) {
-        return res.status(400).json({ errors: validate.errors });
+        return res.status(400).json({ error: validate.errors });
     }
 
     // Read existing users from the file
@@ -47,25 +47,7 @@ module.exports = (req, res) => {
         return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    // Generate a session token (for simplicity, using user ID as the token)
-    const sessionId = uuidv4();
-    const session = {
-        sessionId,
-        userId: user.id,
-        createdAt: new Date().toISOString()
-    };
-
-    // Read existing sessions from the file
-    let sessions = [];
-    if (fs.existsSync(sessionsFilePath)) {
-        const fileData = fs.readFileSync(sessionsFilePath, 'utf-8');
-        sessions = JSON.parse(fileData);
-    }
-    // Add the new session
-    sessions.push(session);
-
-    // Save the updated sessions list to the file
-    fs.writeFileSync(sessionsFilePath, JSON.stringify(sessions, null, 2));
+    const session = createSessionByUserId(user.id);
 
     // Exclude the password from the response
     const { password, ...userWithoutPassword } = user;

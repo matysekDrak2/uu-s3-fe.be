@@ -19,11 +19,12 @@ const validator = ajv.compile(schema);
 const listsFilePath = path.join(__dirname, '../../../data/lists.json');
 
 module.exports = function create(req, res) {
-    const { name, additionalData } = req.body;
+    const { name } = req.body;
+    const userId = req.headers.userId;
 
     const data = {
         name: name,
-        owner: additionalData.userId
+        owner: userId
     }
     const valid = validator(data)
     // Validate input

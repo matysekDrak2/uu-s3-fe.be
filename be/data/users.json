@@ -1,14 +1,20 @@
 [
   {
-    "id": "df224f0d-ca89-4110-8d6b-7a2531135036",
-    "name": "test",
-    "email": "test@mail.co",
-    "password": "6964bb47ec499605fe65ec7f537e36a0a6689d1bd5f782412bf92440d59e4b3d03b52779ce31cea491015040f89be9e9082e5fae2f5fe2259caea53cf0e7dee7"
-  },
-  {
     "id": "edc5bca7-c22f-4fc6-b507-61ded7a2df97",
     "name": "test",
     "email": "test2@mail.co",
     "password": "6964bb47ec499605fe65ec7f537e36a0a6689d1bd5f782412bf92440d59e4b3d03b52779ce31cea491015040f89be9e9082e5fae2f5fe2259caea53cf0e7dee7"
+  },
+  {
+    "id": "f0823e05-7d29-4e49-827e-2989ecc2b92f",
+    "name": "test",
+    "email": "test3@mail.co",
+    "password": "6964bb47ec499605fe65ec7f537e36a0a6689d1bd5f782412bf92440d59e4b3d03b52779ce31cea491015040f89be9e9082e5fae2f5fe2259caea53cf0e7dee7"
+  },
+  {
+    "id": "df224f0d-ca89-4110-8d6b-7a2531135036",
+    "name": "name",
+    "email": "testuser@test.co",
+    "password": "125d6d03b32c84d492747f79cf0bf6e179d287f341384eb5d6d3197525ad6be8e6df0116032935698f99a09e265073d1d6c32c274591bf1d0a20ad67cba921bc"
   }
 ]

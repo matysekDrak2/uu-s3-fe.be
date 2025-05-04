@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const Ajv = require('ajv');
-const { v4: uuidv4 } = require('uuid');
-const hashPassword = require('../../../tools/hashPassword');
+const createSessionByUserId = require('../../../dao/v1/session/create');
+const createUser = require('../../../dao/v1/user/create');
 
 const ajv = new Ajv();
 
@@ -19,9 +19,6 @@ const userSchema = {
 };
 const validate = ajv.compile(userSchema);
 
-// Path to the users data file
-const usersFilePath = path.join(__dirname, '../../../data/users.json');
-
 // Exported function to handle user creation
 module.exports = (req, res) => {
     const userData = req.body;
@@ -30,33 +27,17 @@ module.exports = (req, res) => {
     const valid = validate(userData);
 
     if (!valid) {
-        return res.status(400).json({ errors: validate.errors });
+        return res.status(400).json({ error: validate.errors });
     }
 
-    // Read existing users from the file
-    let users = [];
-    if (fs.existsSync(usersFilePath)) {
-        const fileData = fs.readFileSync(usersFilePath, 'utf-8');
-        users = JSON.parse(fileData);
+    const newUser = createUser(userData);
+    if (!newUser) {
+        return res.status(409).json({ error: 'User with this email already exists' });
     }
 
-    // Check if the email already exists
-    if (users.some(user => user.email === userData.email)) {
-        return res.status(400).json({ error: 'Email already exists' });
-    }
-    const newUser = {
-        id: uuidv4(), // Generate a unique ID
-        ...userData,
-        password: hashPassword(userData.password)
-    }
-
-    // Add the new user
-    users.push(newUser);
-
-    // Save the updated users list to the file
-    fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2));
+    const session = createSessionByUserId(newUser.id);
 
     const {password, ...userWithoutPassword} = newUser;
 
-    res.status(201).json(userWithoutPassword);
+    res.status(200).json({user: userWithoutPassword, session: session});
 };

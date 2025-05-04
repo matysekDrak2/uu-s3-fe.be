@@ -5,8 +5,8 @@ const listsFilePath = path.join(__dirname, '../../../data/lists.json');
 const itemsFilePath = path.join(__dirname, '../../../data/item.json');
 
 module.exports = function getAll(req, res) {
-    const listId = req.params.id;
-    const userId = req.body.additionalData.userId;
+    const listId = req.params.listId;
+    const userId = req.headers.userId;
 
     // Read existing lists
     let lists = [];
@@ -16,7 +16,11 @@ module.exports = function getAll(req, res) {
     }
 
     // Filter lists based on id
-    const list = lists.filter(list => list.id === listId)[0];
+    const list = lists.find(list => list.id === listId);
+
+    if (!list) {
+        return res.status(404).json({ error: 'No lists found' });
+    }
 
     if (list.ownerId !== userId && !(list.cooperators && list.cooperators.includes(userId))) {
         return res.status(404).json({ error: 'No accessible lists found' });
@@ -32,9 +36,9 @@ module.exports = function getAll(req, res) {
     // Filter items belonging to accessible lists
     const accessibleItems = items.filter(item => item.listId === list.id );
 
-    if (accessibleItems.length === 0) {
-        return res.status(404).json({ error: 'No items found for accessible lists' });
-    }
+    //if (accessibleItems.length === 0) {
+    //    return res.status(404).json({ error: 'No items found for accessible lists' });
+    //}
 
     res.status(200).json(accessibleItems);
 };

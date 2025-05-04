@@ -1,11 +1,11 @@
 import {InputGroup, Form, Button} from "react-bootstrap";
 import {useContext} from "react";
-import {ShoppingListContext} from "../providers/shoppingListProvider.jsx";
+import {ListContext} from "./listProvider.jsx";
 import {DataContext} from "../providers/dataProvider.jsx";
 
-function ShoppingListItem({id, archyved}){
+function ListItem({id, archived}){
     const {setShoppingLists} = useContext(DataContext)
-    const {items, boardId} = useContext(ShoppingListContext)
+    const {items, boardId} = useContext(ListContext)
     const item = items.filter((item)=> item.id == id)[0]
 
     function setChecked(value){
@@ -62,7 +62,7 @@ function ShoppingListItem({id, archyved}){
     return (
         <InputGroup className="mb-3" style={{alignSelf: "center"}}>
             <InputGroup.Checkbox style={{alignSelf: "center"}}
-                                 disabled={archyved}
+                                 disabled={archived}
                                  defaultChecked={item.checked}
                                  onChange={(e) => {
                                      setChecked(e.target.checked)
@@ -70,7 +70,7 @@ function ShoppingListItem({id, archyved}){
 
             />
             <Form.Control aria-label="Text input with checkbox"
-                          disabled={archyved}
+                          disabled={archived}
                           defaultValue={item.text}
                           onChange={(e)=>{
                               setText(e.target.value)
@@ -81,4 +81,4 @@ function ShoppingListItem({id, archyved}){
 
 }
 
-export default ShoppingListItem;
+export default ListItem;

@@ -24,7 +24,8 @@ module.exports = (req, res, next) => {
         return res.status(401).json({ error: 'Invalid session' });
     }
 
-    // Add the user ID to the request body
+    // Add the user ID to the request
+    req.headers.userId = session.userId;
     req.body.additionalData = {userId: session.userId};
 
     next();

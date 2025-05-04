@@ -1,50 +1,29 @@
-import {createContext, useContext, useMemo, useState} from "react";
+import {createContext, useContext, useEffect, useMemo, useState} from "react";
 import {Alert, Button, ButtonGroup, Card, CloseButton, Col, Row} from "react-bootstrap";
-import {DataContext} from "./dataProvider.jsx";
-import {UserContext} from "./userProvider.jsx";
-import PropTypes from "prop-types";
+import {DataContext} from "../providers/dataProvider.jsx";
+import {UserContext} from "../user/userProvider.jsx";
+import PropTypes, {func} from "prop-types";
 import {useNavigate} from "react-router-dom";
+import {MockContext} from "../providers/mockProvider.jsx";
 
 function UserManagement(){
-    const {users, setShoppingLists} = useContext(DataContext)
-    const {cooperators, boardId} = useContext(ShoppingListContext)
-    const {currentUser} = useContext(UserContext)
+    const {users} = useContext(DataContext)
+    const {cooperators, boardId, functions} = useContext(ListContext)
+    const {session} = useContext(UserContext)
 
-    const unassignedUsers = users.filter(user => !cooperators.includes(user.id) && user.id !== currentUser.id)
-    const cooperatorUsers = users.filter(user => cooperators.includes(user.id))
+    const unassignedUsers = useMemo(()=>{
+        if (!users.ok) return []
+        return users.data.filter(user => !cooperators.includes(user.id) && user.id !== session.userId)
+    }, [users, session, cooperators])
+    const cooperatorUsers = useMemo(()=>{
+        if (!users.ok) return []
+        return users.data.filter(user => cooperators.includes(user.id))
+    }, [users, cooperators])
 
-    const [selectedBtn, setSelectedBtn] = useState( 0 )
-
-    function leave(userId = currentUser.id){
-        setShoppingLists((prev)=>{
-            const editedList = prev.filter(item => item.id == boardId)[0]
-            return [
-                ...prev.filter(item => item.id != boardId),
-                {
-                    ...editedList,
-                    cooperators: [
-                        ...editedList.cooperators.filter(item => item != userId)
-                    ]
-                }
-            ]
-        })
-    }
-    function addCooperator(userId){
-        setShoppingLists((prev)=>{
-            const editedList = prev.filter(item => item.id == boardId)[0]
-            return [
-                ...prev.filter(item => item.id != boardId),
-                {
-                    ...editedList,
-                    cooperators: [
-                        ...editedList.cooperators,
-                        Number(userId)
-                    ]
-                }
-            ]
-        })
-    }
-
+    const [selectedBtn, setSelectedBtn] = useState( "" )
+    useEffect(()=>{
+        console.log("ListProvider - UserManagement selected user: ", selectedBtn)
+    })
     return (
         <Card>
             <Card.Body>
@@ -60,12 +39,12 @@ function UserManagement(){
                         })}
                     </Col>
                     <Col xs={2} style={{display: "flex", justifyContent: "center", alignItems: "center"}}>
-                        <Button disabled={selectedBtn === 0}
+                        <Button disabled={selectedBtn === ""}
                                 onClick={ () => {
                                     if (cooperators.includes(selectedBtn)){
-                                        leave(selectedBtn)
+                                        functions.leaveList(boardId, selectedBtn)
                                     } else {
-                                        addCooperator(selectedBtn)
+                                        functions.addCooperator(boardId, selectedBtn)
                                     }
                                 }}
                         >
@@ -158,7 +137,7 @@ function ArchyvationConfirmation({id, close}){
                 ...prev.filter(item => item.id != id),
                 {
                     ...edt,
-                    archyved: true
+                    archived: true
                 }
             ]
         })
@@ -183,21 +162,18 @@ function ArchyvationConfirmation({id, close}){
     )
 }
 
-function Management({shoppingListId, close}) {
-    const {currentUser} = useContext(UserContext)
-    const {shoppingLists} = useContext(DataContext)
+function Management({close}) {
+    const {session} = useContext(UserContext)
+    const {name, ownerId, boardId} = useContext(ListContext)
     const [btnSelected, setBtnSelected] = useState(0)
-
-    const curShoppingList = shoppingLists.filter(sl => sl.id == shoppingListId)[0]
 
     return (
         <Alert dismissible style={{position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
             backgroundColor: "rgba(0, 0, 0, 0.5)",
             zIndex: 800, display: "flex", justifyContent: "center", alignItems: "center"}}>
             <Card style={{zIndex: 810}}>
-
                 <Card.Header style={{paddingRight: "50px"}} >
-                    Management of {shoppingListId}
+                    Management of {name}
                     <CloseButton style={{paddingTop: "5px"}}
                                  onClick={()=>{
                                     close()
@@ -206,7 +182,7 @@ function Management({shoppingListId, close}) {
                 </Card.Header>
                 <Card.Body>
                     <ButtonGroup style={{width: "100%"}}>
-                        {currentUser.id == curShoppingList.owner &&
+                        {session.userId === ownerId &&
                             <Button disabled={btnSelected === 1}
                                     onClick={()=>setBtnSelected(1)}
                                     variant={"warning"}
@@ -218,9 +194,9 @@ function Management({shoppingListId, close}) {
                                 onClick={()=>setBtnSelected(2)}
                                 variant={"danger"}
                         >{
-                            currentUser.id === curShoppingList.owner ? "Delete" : "Leave"
+                            session.userId === ownerId ? "Delete" : "Leave"
                         }</Button>
-                        {currentUser.id === curShoppingList.owner &&
+                        {session.userId === ownerId &&
                         <Button disabled={btnSelected === 3}
                                 onClick={()=>setBtnSelected(3)}
                                 variant={"danger"}>
@@ -230,91 +206,107 @@ function Management({shoppingListId, close}) {
                 </Card.Body>
                 <Card.Body>
                     {btnSelected === 1 && <UserManagement/>}
-                    {btnSelected === 2 && curShoppingList.owner !== currentUser.id && <LeaveConfirmation/>}
-                    {btnSelected === 2 && curShoppingList.owner === currentUser.id && <DeleteConfirmation id={curShoppingList.id}/>}
-                    {btnSelected === 3 && <ArchyvationConfirmation id={curShoppingList.id} close={()=>close()} />}
+                    {btnSelected === 2 && ownerId !== session.userId && <LeaveConfirmation/>}
+                    {btnSelected === 2 && ownerId === session.userId && <DeleteConfirmation id={boardId}/>}
+                    {btnSelected === 3 && <ArchyvationConfirmation id={boardId} close={()=>close()} />}
                 </Card.Body>
             </Card>
         </Alert>
     )
 }
 
-export const ShoppingListContext = createContext({
-    items: [0],
+export const ListContext = createContext({
+    items: [""],
     name: "",
-    boardId: 0,
-    ownerId: 0,
-    cooperators: [0],
-    archyved: false,
-    setName: (name) =>{return null},
-    setManagementOpened: (state) => {return null},
-    addTask: () => {return null}
+    boardId: "",
+    ownerId: "",
+    cooperators: [""],
+    archived: false,
+    functions: {
+        leaveList: async (listId, userId) => {},
+        addCooperator: async (listId, userId) => {},
+    },
+    setManagementOpened: () => {}
 })
 
-function ShoppingListProvider({children, id}){
-    const {shoppingLists, setShoppingLists} = useContext(DataContext)
-    const {currentUser} = useContext(UserContext)
+function ListProvider({children, id}) {
+    const {isMock, createTaskMock, updateListMock, deleteListMock, leaveListMock} = useContext(MockContext)
+    const {lists, apiReq} = useContext(DataContext)
+    const {session} = useContext(UserContext)
 
     const [list , err] = useMemo(()=>{
-        if (!shoppingLists.map(item => item.id.toString()).includes(id.toString())) {
+        if (!lists.ok) return [[], "Dataprovider had not provided correct data yet"]
+        if (!lists.data.map(item => item.id).includes(id)) {
             console.log("Failed to load")
             return [new Array(), "Failed to load"]
         }
-        const list = shoppingLists.filter(item=> item.id.toString() == id)[0]
-        if (list.owner !== currentUser.id && !list.cooperators.includes(currentUser.id)){
+        const list = lists.data.find(item => item.id === id)
+        if (list.ownerId !== session.userId && !list.cooperators.includes(session.userId)){
             console.log("Access denied")
             return [new Array(), "Access denied"]
         }
         return [list, null]
-    }, [shoppingLists, id, currentUser])
+    }, [lists, id, session])
 
-
-    function addTask(){
-        setShoppingLists((prev)=>{
-            const editedList = prev.filter(item => item.id == id)[0]
-            const newId = Math.max(Math.max(...editedList.tasks.map(item=>item.id)), -1) + 1
-            console.log(newId)
-            return [
-                ...prev.filter(item => item.id != id),
-                {
-                    ...editedList,
-                    tasks: [
-                        ...editedList.tasks,
-                        {id: newId, text: "", checked: false}
-                    ]
-                }
-            ]
-        })
+    const [itemList, setItemList] = useState({})
+    async function reloadList() {
+        if (isMock) {
+            setItemList(list)
+            return
+        }
+        console.log("sending req to "+ "listItems/" + id)
+        const res = await apiReq('listItems/' + id)
+        setItemList(res)
     }
-    function setName(name){
-        setShoppingLists((prev)=>{
-            const editedList = prev.filter(item => item.id == id)[0]
-            const newId = Math.max(Math.max(...editedList.tasks.map(item=>item.id)), -1) + 1
-            console.log(newId)
-            return [
-                ...prev.filter(item => item.id != id),
-                {
-                    ...editedList,
-                    name: name
-                }
-            ]
-        })
+    useEffect(()=>{
+        reloadList()
+    }, [isMock, session, list])
+
+    function addTask() {
+        if (isMock) {
+            createTaskMock(id, "")
+            return
+        }
+    }
+    function setName(name) {
+        if (isMock) {
+            updateListMock(id, name)
+            return
+        }
     }
     function del() {
-        setShoppingLists((prev)=>{
-            return [
-                ...prev.filter(item => item.id != id)
-            ]
-        })
+        if (isMock) {
+            deleteListMock(id)
+            return
+        }
     }
+    console.log("List " + id.toString() + " loaded: ", list)
 
     const managementFunctions = {
-        addTask:() => addTask(),
+        addTask: () => addTask(),
         setName: (name) => setName(name),
-        del: () => del(),
+        del: () => del()
     }
 
-    const ownerId = list.owner
+    const functions ={
+        leaveList: async (listId, userId = session.userId) => {
+            if (isMock) {
+                leaveListMock(listId, userId)
+                return
+            }
+            await apiReq('lists/' + listId, "PUT", JSON.stringify({cooperators: [...list.cooperators.filter(item=> item !== userId)]}))
+        },
+        addCooperator: async (listId, userId) => {
+            if (isMock) {
+                leaveListMock(listId, userId)
+                return
+            }
+            await apiReq('lists/' + listId, "PUT", JSON.stringify({cooperators: [...list.cooperators, userId]}))
+            await reloadList()
+        }
+    }
+
+    const ownerId = list.ownerId
     const [managementOpened , setManagementOpened] = useState(false)
     const value = {
         items: list.tasks,
@@ -322,23 +314,23 @@ function ShoppingListProvider({children, id}){
         boardId: id,
         ownerId: ownerId,
         cooperators: list.cooperators,
-        archyved: list.archyved,
-        setName: (name) => setName(name),
-        setManagementOpened: (state) => setManagementOpened(state),
-        addTask: () => addTask()
+        archived: list.archived,
+        functions,
+        setManagementOpened
     }
     return (
-        <ShoppingListContext.Provider value={value}>
-            { managementOpened && <Management shoppingListId={id} close={()=>{setManagementOpened(false)}}/>}
+        <ListContext.Provider value={value}>
+            { managementOpened && <Management listId={id} close={()=>{setManagementOpened(false)}}/>}
             { err === null && children}
             { err !== null && <Alert key={'danger'} variant={'danger'}>UNABLE TO LOAD DATA FROM LIST WITH ID {id}</Alert>}
-        </ShoppingListContext.Provider>
+
+        </ListContext.Provider>
     )
 }
 
-ShoppingListProvider.propTypes = {
+ListProvider.propTypes = {
     children: PropTypes.node.isRequired,
-    id: PropTypes.number.isRequired
+    id: PropTypes.string.isRequired
 };
 
-export default ShoppingListProvider;
+export default ListProvider;

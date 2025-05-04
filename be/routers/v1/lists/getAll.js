@@ -4,8 +4,7 @@ const path = require('path');
 const listsFilePath = path.join(__dirname, '../../../data/lists.json');
 
 module.exports = function get(req, res) {
-    const userId = req.body.additionalData.userId
-
+    const userId = req.headers.userId
 
     // Read existing lists
     let lists = [];
@@ -18,10 +17,6 @@ module.exports = function get(req, res) {
     const accessibleLists = lists.filter(list =>
         list.ownerId === userId || (list.cooperators && list.cooperators.includes(userId))
     );
-
-    if (accessibleLists.length === 0) {
-        return res.status(404).json({ error: 'No accessible lists found' });
-    }
 
     res.status(200).json(accessibleLists);
 };

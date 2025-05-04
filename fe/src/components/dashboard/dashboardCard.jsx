@@ -2,16 +2,17 @@ import {Button, Form, InputGroup} from "react-bootstrap";
 import {useNavigate} from "react-router-dom";
 import {useContext, useMemo} from "react";
 import {DataContext} from "../providers/dataProvider.jsx";
-import {ShoppingListContext} from "../providers/shoppingListProvider.jsx";
+import {ListContext} from "../list/listProvider.jsx";
 
 function DashboardCard({id, isOwner}){
     const navigate = useNavigate()
-    const { shoppingLists } = useContext(DataContext)
-    const {setName, setManagementOpened} = useContext(ShoppingListContext)
+    const { lists } = useContext(DataContext)
+    const {setName, setManagementOpened} = useContext(ListContext)
 
     const list = useMemo(()=>{
-        return shoppingLists.filter(item => item.id === id)[0];
-    }, [shoppingLists, id])
+        if (!lists.ok) return {}
+        return lists.data.filter(item => item.id === id)[0];
+    }, [lists, id])
 
     return (
         <InputGroup style={{margin: "10px"}}>
@@ -20,7 +21,7 @@ function DashboardCard({id, isOwner}){
                     setName(e.target.value)
                 }}
             />
-            {!list.archyved && <Button variant={"warning"} onClick={()=>{setManagementOpened((prev)=> !prev)}}>MNG</Button>}
+            {!list.archived && <Button variant={"warning"} onClick={()=>{setManagementOpened((prev)=> !prev)}}>MNG</Button>}
             <Button variant={"success"} onClick={()=>{navigate('/list/'+id)}}>OPEN</Button>
         </InputGroup>
     )

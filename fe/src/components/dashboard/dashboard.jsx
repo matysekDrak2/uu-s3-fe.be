@@ -1,57 +1,40 @@
 import {Alert, Button, ButtonGroup, Container, Row} from "react-bootstrap";
-import ShoppingListProvider from "../providers/shoppingListProvider.jsx";
+import ListProvider from "../list/listProvider.jsx";
 import {useContext, useMemo, useState} from "react";
-import {UserContext} from "../providers/userProvider.jsx";
+import {UserContext} from "../user/userProvider.jsx";
 import {DataContext} from "../providers/dataProvider.jsx";
 import DashboardCard from "./dashboardCard.jsx";
 
 function Dashboard(){
-    const {currentUser} = useContext(UserContext)
-    const {shoppingLists, setShoppingLists} = useContext(DataContext)
-
-    const ownedLists = shoppingLists.filter(list => list.owner === currentUser.id);
-    const invitedToLists = shoppingLists.filter(list => list.cooperators.includes(currentUser.id))
+    const {session} = useContext(UserContext)
+    const {lists, addList} = useContext(DataContext)
 
     const [filter, setFilter] = useState(0)
 
     const shownOwnedLists = useMemo(() => {
+        if (!lists.ok) return []
+        const ownedLists = lists.data.filter(list => list.ownerId === session.userId);
         switch (filter) {
             case 0:
                 return ownedLists;
             case 1:
-                return ownedLists.filter(list => list.archyved);
+                return ownedLists.filter(list => list.archived);
             default:
-                return ownedLists.filter(list => !list.archyved);
+                return ownedLists.filter(list => !list.archived);
         }
-    }, [ownedLists, filter])
+    }, [lists, filter, session])
     const shownInvitedLists = useMemo(() => {
+        if (!lists.ok) return []
+        const invitedToLists = lists.data.filter(list => list.cooperators.includes(session.userId))
         switch (filter) {
             case 0:
                 return invitedToLists;
             case 1:
-                return invitedToLists.filter(list => list.archyved);
+                return invitedToLists.filter(list => list.archived);
             default:
-                return invitedToLists.filter(list => !list.archyved);
+                return invitedToLists.filter(list => !list.archived);
         }
-    }, [invitedToLists, filter])
-
-    function addTaskList() {
-        setShoppingLists((prev) =>{
-            const nextId = Math.max(...prev.map(taskList => taskList.id)) + 1
-            return [
-                ...prev,
-                {
-                    id: nextId,
-                    owner: currentUser.id,
-                    cooperators: [],
-                    name: "",
-                    tasks: []
-                }
-            ]
-        })
-    }
-
-
+    }, [lists, filter, session])
 
     return (
         <Container fluid style={{paddingLeft: "25px", paddingRight: "25px"}}>
@@ -61,35 +44,38 @@ function Dashboard(){
                         <Button variant={"primary"}
                                 onClick={()=> {
                                     setFilter(prev => (prev + 1) % 3)
-                                    console.log(filter)
+                                    console.log("Dashboard setting filter to: ", filter)
                                 }}
                         >Filter: {
                             filter === 0 ? "All" : filter === 1 ? "Archived" : "Active"
                         }</Button>
                         <Button variant={"success"}
-                                onClick={ () => addTaskList() }
+                                onClick={ () => addList("") }
                         >+</Button>
                     </ButtonGroup>
                 </Alert>
             </Row>
+
+            {/** Owned Lists*/}
             <Row className="justify-content-center">
                 {shownOwnedLists.sort((a,b) => a.id-b.id).map(list=>{
                     return (
-                        <ShoppingListProvider key={list.id} id={list.id}>
+                        <ListProvider key={list.id} id={list.id}>
                             <DashboardCard id={list.id} isOwner={true} xs={4} sm={6} md={6} />
-                        </ShoppingListProvider>
+                        </ListProvider>
                     )
                 })}
             </Row>
 
 
             <Alert style={{marginTop: "20px"}}> Invited to </Alert>
+            {/** Invited to Lists*/}
             <Row className="justify-content-center">
                 {shownInvitedLists.sort((a,b) => a.id-b.id).map((list)=>{
                     return (
-                        <ShoppingListProvider key={list.id} id={list.id}>
+                        <ListProvider key={list.id} id={list.id}>
                             <DashboardCard key={list.id} id={list.id} isOwner={false} xs={4} sm={6} md={6} />
-                        </ShoppingListProvider>
+                        </ListProvider>
                     )
                 })}
             </Row>

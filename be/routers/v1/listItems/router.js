@@ -6,14 +6,14 @@ const auth = require('../users/auth')
 router.use(auth);
 
 // Get list by ID
-const get = require('./get')
-router.get('/:id', (req, res)=>{
-    get(req, res)
-})
+//const get = require('./get')
+//router.get('/:id', (req, res)=>{
+//    get(req, res)
+//})
 
 // Get all lists for user
 const getAll = require('./getAll')
-router.get('/', (req, res)=>{
+router.get('/:listId', (req, res)=>{
     getAll(req, res)
 })
 
